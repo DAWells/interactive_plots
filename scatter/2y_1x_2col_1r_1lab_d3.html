@@ -1,0 +1,287 @@
+<script src="https://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+<p>d3 scatter template</p>
+
+<style>
+  p{
+    color:red;
+  }
+  
+  .legend{
+  font-size: 12px;
+}
+rect{
+  stroke-width: 2;
+  cursor: pointer;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shapde-rendering:crispEdges;
+}
+.axis text{
+  font-family: sans-serif;
+  font-size: 11px;
+}
+.lab{
+  font-family:sans-serif;
+}
+text{
+  font-family:sans-serif;
+}
+.Name{
+  font-size:20px;
+}
+</style>
+
+<script>
+var w = 800;
+var h = 800;
+var padding = 100;
+
+var dataset = [
+  {label:"	Cambridge	",xVal:	1	,yVal:	9794	,rVal:	19385	,col1Val:	30.41666667	,col2Val:	51.3125	,TwoTwos:	9.791666667	,OtherHons:	0.708333333	,Ordinary:	0.125	,NotClassified:	6.958333333	,},
+{label:"	Oxford	",xVal:	2	,yVal:	9689	,rVal:	25670	,col1Val:	34.15116279	,col2Val:	59.01162791	,TwoTwos:	5.290697674	,OtherHons:	0.906976744	,Ordinary:	0	,NotClassified:	1.302325581	,},
+{label:"	Manchester	",xVal:	31	,yVal:	5441	,rVal:	38480	,col1Val:	22.55052265	,col2Val:	55.64982578	,TwoTwos:	16.61498258	,OtherHons:	4.404181185	,Ordinary:	0	,NotClassified:	0.797909408	,},
+{label:"	Lancaster	",xVal:	11	,yVal:	4103	,rVal:	13075	,col1Val:	23.99212598	,col2Val:	53.91076115	,TwoTwos:	19.62992126	,OtherHons:	2.467191601	,Ordinary:	0	,NotClassified:	0.039370079	,},
+{label:"	York	",xVal:	16	,yVal:	3751	,rVal:	17405	,col1Val:	28.71935484	,col2Val:	48.64193548	,TwoTwos:	19.03548387	,OtherHons:	4.090322581	,Ordinary:	0	,NotClassified:	0	,},
+{label:"	Leeds	",xVal:	34	,yVal:	3484	,rVal:	30385	,col1Val:	23.33858268	,col2Val:	57.89238845	,TwoTwos:	15.66929134	,OtherHons:	1.682414698	,Ordinary:	1.020997375	,NotClassified:	0.42519685	,},
+{label:"	Southampton	",xVal:	24	,yVal:	3383	,rVal:	24135	,col1Val:	28	,col2Val:	57.01401869	,TwoTwos:	9.908878505	,OtherHons:	4.71728972	,Ordinary:	0	,NotClassified:	0.471962617	,},
+{label:"	Warwick	",xVal:	10	,yVal:	3213	,rVal:	27440	,col1Val:	27.26760563	,col2Val:	58.17957746	,TwoTwos:	11.62323944	,OtherHons:	2.38028169	,Ordinary:	0	,NotClassified:	0.017605634	,},
+{label:"	Surrey	",xVal:	8	,yVal:	3203	,rVal:	15055	,col1Val:	27.49160671	,col2Val:	54.09592326	,TwoTwos:	16.16786571	,OtherHons:	2.189448441	,Ordinary:	0	,NotClassified:	0	,},
+{label:"	 Loughborough	",xVal:	14	,yVal:	2981	,rVal:	16195	,col1Val:	24.84931507	,col2Val:	53.88013699	,TwoTwos:	19.10958904	,OtherHons:	2.363013699	,Ordinary:	0	,NotClassified:	0	,},
+
+]
+
+// Initialise arrays to generate scale range from data
+var xArray = [];
+var yArray = [];
+var rArray = [];
+var col1Array = [];
+var col2Array = [];
+
+//Fill arrays
+for (var i = 0; i<dataset.length;i++){
+  yArray[i] = dataset[i].yVal
+  xArray[i] = dataset[i].xVal
+  rArray[i] = dataset[i].rVal
+  col1Array[i] = dataset[i].col1Val
+  col2Array[i] = dataset[i].col2Val
+}
+
+var xScale = d3.scale.linear()
+ .domain([d3.min(xArray)-1,d3.max(xArray)])
+  .range([padding,w-padding]);
+
+var yScale = d3.scale.linear()
+  .domain([0,10000])
+  .range([h-padding,padding]);
+
+var y2Scale = d3.scale.linear()
+  .domain([0,0.75])
+  .range([h-padding,padding]);
+
+var rScale = d3.scale.linear()
+  .domain([d3.min(rArray),d3.max(rArray)])
+  .range([10,50]);
+
+//set range using variable for transistions
+//automate domain from data
+var colourScale = d3.scale.linear()
+  .domain([d3.min(col1Array),d3.max(col1Array)])
+  .range(['blue','#F700FF']);
+
+var colour2Scale = d3.scale.linear()
+  .domain([d3.min(col2Array),d3.max(col2Array)])
+  .range(['lime','#F700FF']);
+
+var svg = d3.select('body')
+  .append('svg')
+  .attr('width',w)
+  .attr('height',h);
+
+var xAxis = d3.svg.axis()
+  .scale(xScale)
+  .orient("bottom");
+
+var yAxis = d3.svg.axis()
+  .scale(yScale)
+  .orient('left');
+
+var y2Axis = d3.svg.axis()
+  .scale(y2Scale)
+  .orient('left');
+
+var point = svg.selectAll('g')
+  .data(dataset)
+  .enter()
+  .append('g')
+  .on('mouseover', function(d){
+    d3.select(this).selectAll('text')
+    .attr('opacity',1)
+  })
+  .on('mouseout',function(d){
+    d3.select(this).selectAll('text')
+    .transition()
+    .duration(100)
+    .attr('opacity',0)
+  })
+
+var circles = point.append('circle')
+  .attr('cx',function(d){
+  return xScale(d.xVal)
+})
+  .attr('cy',function(d){
+  return yScale(d.yVal)
+})
+  .attr('r',function(d){
+  return rScale(d.rVal)
+})
+  .attr('fill', function(d){
+  return colourScale(d.col1Val)
+})
+  .attr('opacity', 1);
+
+point.append('text')
+  .html(function(d){
+  return d.label
+})
+  .attr('x',function(d){
+  return w/2
+})
+  .attr('y',function(d){
+  return h/4
+})
+  .attr('text-anchor', 'middle')
+  .attr('opacity', 0)
+  .attr('class','Name');
+
+//Add x axis
+svg.append('g')
+  .attr('class', 'axis')
+  .attr("transform", "translate(0," + (h - padding) + ")")
+  .call(xAxis)
+
+svg.append('text')
+  // Set axis label
+  .text('x Value')
+  .attr('x', function(d){
+  return xScale((d3.max(xArray)-d3.min(xArray))/2)
+})
+  .attr('y',h-padding+40)
+  .attr('text-anchor', 'middle')
+  .attr('class', 'lab')
+
+ //Add y axis
+var yLine = svg.append('g')
+  .attr('class','axis')
+  .call(yAxis)
+  .attr('transform', 'translate('+ padding + ',0)')
+
+var yLineText = svg.append('text')
+  // Set axis label
+  .text('y value')
+  .attr('x',function(d){
+  return -(h/2)
+})
+  .attr('y', padding - 40)
+  .attr('transform', 'rotate(-90)')
+  .attr('text-anchor', 'middle')
+
+//Add second y axis
+var y2Line = svg.append('g')
+  .attr('class','axis')
+  .call(y2Axis)
+  .attr('transform', 'translate('+ padding + ',0)')
+  .attr('opacity', 0)
+
+var y2LineText = svg.append('text')
+  // Set axis label
+  .text('Second y value')
+  .attr('x',function(d){
+  return -(h/2)
+})
+  .attr('y', padding - 40)
+  .attr('transform', 'rotate(-90)')
+  .attr('text-anchor', 'middle')
+  .attr('opacity', 0)
+
+var yButton = svg.append('rect')
+  .attr('x', 100)
+  .attr('y', 20)
+  .attr('height', 20)
+  .attr('width', 20)
+  .on("click", function(){
+  circles.transition()
+    .attr('cy',function(d){
+  return yScale(d.yVal)
+})
+  y2Line.transition()
+    .attr('opacity', 0)
+  y2LineText.transition()
+    .attr('opacity', 0)
+  yLine.transition()
+    .attr('opacity', 1)
+  yLineText.transition()
+    .attr('opacity', 1)
+})
+// button label
+svg.append('text')
+.text('y')
+.attr('x',101)
+.attr('y',55)
+
+
+var y2Button = svg.append('rect')
+  .attr('x', 150)
+  .attr('y', 20)
+  .attr('height', 20)
+  .attr('width', 20)
+  .on("click", function(){
+  circles.transition()
+  .attr('cy',function(d){
+  return y2Scale((d.yVal)/(d.rVal))
+})
+    y2Line.transition()
+    .attr('opacity', 1)
+  y2LineText.transition()
+    .attr('opacity', 1)
+  yLine.transition()
+    .attr('opacity', 0)
+  yLineText.transition()
+    .attr('opacity', 0)
+})
+
+svg.append('text')
+  //button label
+.text('y2')
+.attr('x',151)
+.attr('y',55)
+
+
+var col1Button = svg.append('rect')
+  .attr('x', 280)
+  .attr('y', 20)
+  .attr('height', 20)
+  .attr('width', 20)
+  .attr('fill', 'blue')
+  .on("click", function(){
+  circles.transition()
+  .attr('fill',function(d){
+  return colourScale(d.col1Val)
+})
+})
+
+var col2Button = svg.append('rect')
+  .attr('x', 305)
+  .attr('y', 20)
+  .attr('height', 20)
+  .attr('width', 20)
+  .attr('fill', 'lime')
+  .on("click", function(){
+  circles.transition()
+  .attr('fill',function(d){
+  return colour2Scale(d.col2Val)
+})
+})
+</script>
